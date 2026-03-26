@@ -3,17 +3,52 @@ import styles from "../styles/LoginForm.module.css";
 
 function LoginForm() {
   const [formData, setFormData] = useState({ username: "", password: ""});
-
+  const [errors, setErrors] = useState([
+    {
+      field: "username",
+      message: "",
+    },
+    {
+      field: "password",
+      message: "",
+    },
+    {
+      field: "general",
+      message: "",
+    },
+  ]);
   const [submittedData, setSubmittedData] = useState(null);
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
+const handleChange = (event) => {
+  const { name, value } = event.target;
 
-    setFormData((prevData) => ({...prevData, [name]: value}));
-  };
+  setFormData((prevData) => ({ ...prevData, [name]: value }));
 
+  setErrors((prevErrors) =>
+    prevErrors.map((error) =>
+      error.field === name || error.field === "general"
+        ? { ...error, message: "" }
+        : error
+    )
+  );
+};
   const handleSubmit = (event) => {
     event.preventDefault();
+    if(!formData.username.trim() || !formData.password.trim()) {
+      setErrors((prevErrors) =>
+        prevErrors.map((error) => {
+          if (error.field === "username" && !formData.username.trim()) {
+            return { ...error, message: "Username is required" };
+          }
+          if (error.field === "password" && !formData.password.trim()) {
+            return { ...error, message: "Password is required" };
+          }
+          return error;
+        })
+      );
+      return;
+    }
+
     setSubmittedData(formData);
   };
 
@@ -36,8 +71,8 @@ function LoginForm() {
               value={formData.username}
               onChange={handleChange}
               className={styles.input}
-              required
             />
+            <small style={{ color: "red" }}>{errors[0].message}</small>
           </div>
 
           <div className={styles.formGroup}>
@@ -52,8 +87,8 @@ function LoginForm() {
               value={formData.password}
               onChange={handleChange}
               className={styles.input}
-              required
             />
+            <small style={{ color: "red" }}>{errors[1].message}</small>
           </div>
 
           <button type="submit" className={styles.button}>
